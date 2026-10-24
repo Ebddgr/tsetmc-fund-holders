@@ -24,6 +24,7 @@ h2 small{font-weight:400;color:var(--mut);font-size:11px;margin-inline-start:8px
 .tools{display:flex;gap:9px;flex-wrap:wrap;align-items:center;margin:10px 0 12px;position:sticky;top:0;background:linear-gradient(var(--bg) 72%,transparent);padding:8px 0;z-index:30}
 input.search{flex:1;min-width:220px;padding:9px 13px;border-radius:9px;border:1px solid var(--line);background:var(--card);color:var(--txt);font-family:inherit;font-size:12.5px}
 input.search:focus{outline:none;border-color:var(--accent)}
+input.search.insin{flex:0 1 230px;min-width:150px;font-family:Consolas,'IRANSans',monospace}
 .btn{background:var(--card);border:1px solid var(--line);color:var(--mut);border-radius:8px;padding:9px 12px;font-family:inherit;font-size:11.5px;cursor:pointer;white-space:nowrap}
 .btn:hover{border-color:var(--accent);color:var(--txt)}
 .btn.primary{background:#17324f;border-color:#2b5c8f;color:#bcdcff;font-weight:700}
@@ -71,6 +72,8 @@ details[open] summary::before{content:"\25BE"}
 .badge.gold{background:#2b2415;color:var(--gold)}
 .badge.dim{background:#20242c;color:#a7b0bf}
 .badge.warn{background:#3a1f22;color:#ff9c9c}
+button.rmv{cursor:pointer;border:1px solid transparent;font-family:inherit}
+button.rmv:hover{background:#54262b;color:#fff}
 .code{color:var(--mut);font-size:10px;font-family:Consolas,monospace;direction:ltr}
 .empty{padding:14px;color:var(--mut);font-size:11.5px}
 #ov{position:fixed;inset:0;background:#000000b8;display:none;align-items:center;justify-content:center;padding:20px;z-index:100;backdrop-filter:blur(3px)}
@@ -97,6 +100,7 @@ footer{margin-top:28px;padding-top:12px;border-top:1px solid var(--line);color:v
   h2 small{display:block;margin-top:4px;font-size:10px;line-height:1.9}
   .tools{flex-direction:row;flex-wrap:wrap;align-items:stretch;gap:8px}
   input.search{flex:1 1 100%;width:100%;font-size:13px}
+  input.search.insin{flex:1 1 100%;min-width:0;font-size:13px}
   .tools .btn{flex:1 1 calc(50% - 4px);width:auto;padding:10px;font-size:12px}
   #updwrap{flex:1 1 100%;width:100%}
   .scroll{overflow-x:auto;-webkit-overflow-scrolling:touch;border-radius:8px}
@@ -153,8 +157,10 @@ footer{margin-top:28px;padding-top:12px;border-top:1px solid var(--line);color:v
 
 <div class="tools">
   <input class="search" id="q" placeholder="جست‌وجو: نام دارنده یا نام صندوق…">
-  <button class="btn primary" id="upd">آپدیت از تسه‌مکو</button>
+  <button class="btn primary" id="upd">آپدیت</button>
   <div id="updwrap"><div id="pbar"><i></i></div><span id="status"></span></div>
+  <input class="search insin" id="insin" placeholder="افزودن صندوق با کد نماد…" spellcheck="false">
+  <button class="btn" id="addins">افزودن</button>
   <button class="btn" id="exp">خروجی HTML</button>
   <button class="btn" id="expand">باز کردن همه</button>
   <button class="btn" id="collapse">بستن همه</button>
@@ -175,7 +181,8 @@ footer{margin-top:28px;padding-top:12px;border-top:1px solid var(--line);color:v
 
 <footer>منبع: سرویس رسمی تسه‌مکو (api/Shareholder/GetInstrumentShareHolderLast، api/ClosingPrice/GetClosingPriceInfo و api/Instrument/GetInstrumentInfo). ارزش هر دارنده = تعداد واحد × قیمت پایانی همان صندوق.
 تسه‌مکو فقط دارندگان بالای آستانه (معمولاً ≥۱٪) را منتشر می‌کند؛ پس درصدها به ۱۰۰ نمی‌رسند و باقی در دست دارندگان خرد است.
-ردیف‌های «شخص حقيقي» و «ETFكدرزروصندوقهاي سرمايه گذاري قابل معامله» از فهرست و از محاسبات ارزش حذف شده‌اند. دکمه «آپدیت از تسه‌مکو» داده را زنده می‌گیرد و در همین مرورگر ذخیره می‌شود (فایل اکسل با آپدیت صفحه به‌روز نمی‌شود).</footer>
+ردیف‌های «شخص حقيقي» و «ETFكدرزروصندوقهاي سرمايه گذاري قابل معامله» از فهرست و از محاسبات ارزش حذف شده‌اند. دکمه «آپدیت از تسه‌مکو» داده را زنده می‌گیرد و در همین مرورگر ذخیره می‌شود (فایل اکسل با آپدیت صفحه به‌روز نمی‌شود).
+با واردکردن کد نماد (insCode) در فیلد کنار دکمه «افزودن»، صندوق دلخواه همان لحظه از تسه‌مکو گرفته و به گزارش اضافه می‌شود؛ صندوق‌های افزوده‌شده در مرورگر ذخیره می‌شوند و با دکمه «حذف» روی کارت‌شان پاک می‌شوند.</footer>
 </div>
 
 <div id="ov"><div id="modal">
@@ -294,7 +301,7 @@ function fundCards(){
         '<td class="num chg ' + cls + '" data-v="' + ch + '">' + chs + '</td></tr>';
     }).join('');
     var body = f.holders.length ? ('<table class="sortable"><thead><tr><th width="34">#</th><th data-s="t">نام دارنده</th><th data-s="n" width="92">٪ صندوق</th><th data-s="n" width="176">ارزش (میلیارد تومان)</th><th data-s="n" width="120">تغییر واحد</th></tr></thead><tbody>' + rows + '</tbody></table>') : '<div class="empty">دارنده‌ای بالای آستانهٔ انتشار ثبت نشده است.</div>';
-    return '<details class="fund" data-name="' + esc(f.name + ' ' + f.full) + '">' +
+    return '<details class="fund" data-ins="' + esc(f.ins) + '" data-name="' + esc(f.name + ' ' + f.full) + '">' +
       '<summary><span class="fname">' + esc(f.name) + '</span>' +
       '<span class="full">' + esc(f.full) + '</span>' +
       '<span class="meta">' +
@@ -304,6 +311,7 @@ function fundCards(){
         '<span class="badge dim">قیمت پایانی ' + nf(f.price) + ' ریال</span>' +
         '<span class="code">' + f.ins + '</span>' +
         (f.err ? '<span class="badge warn">آپدیت نشد</span>' : '') +
+        (f.man ? '<button class="badge warn rmv" data-rm="' + esc(f.ins) + '" title="حذف این صندوق از گزارش">حذف</button>' : '') +
       '</span></summary>' + body + '</details>';
   }).join('');
   Array.prototype.forEach.call(document.querySelectorAll('#fundlist table.sortable'), wire);
@@ -372,40 +380,90 @@ function pool(items, limit, worker, onDone){
 
 function setStatus(txt, cls){
   var s = document.getElementById('status');
+  if(!s) return;
   s.textContent = txt || '';
   s.className = cls || '';
 }
 function progress(done, total){
   var bar = document.getElementById('pbar');
-  bar.classList.add('on');
-  bar.firstElementChild.style.width = Math.round(done/total*100) + '%';
+  if(bar){
+    bar.classList.add('on');
+    if(bar.firstElementChild) bar.firstElementChild.style.width = Math.round(done/total*100) + '%';
+  }
   setStatus('دریافت ' + done + ' از ' + total);
+}
+
+function fetchFund(f){
+  return Promise.all([
+    getJSON('https://cdn.tsetmc.com/api/ClosingPrice/GetClosingPriceInfo/' + f.ins),
+    getJSON('https://cdn.tsetmc.com/api/Shareholder/GetInstrumentShareHolderLast/' + f.ins),
+    getJSON('https://cdn.tsetmc.com/api/Instrument/GetInstrumentInfo/' + f.ins)
+  ]).then(function(res){
+    var c = res[0].closingPriceInfo || {}, sh = res[1].shareHolder || [], ci = res[2].instrumentInfo || {};
+    var shl = sh.filter(function(h){ return !EXCL.has(String(h.shareHolderName).trim()); });
+    var fund = {
+      name: (f.man && (ci.lVal18AFC || ci.lVal30)) ? (ci.lVal18AFC || ci.lVal30) : f.name,
+      ins: f.ins, full: ci.lVal30 || f.full,
+      units: ci.zTitad || f.units, price: c.pClosing || f.price,
+      holders: shl.map(function(h){
+        return {n:String(h.shareHolderName).trim(), u:h.numberOfShares||0, p:Math.round((h.perOfShares||0)*1000)/1000, c:h.changeAmount||0};
+      }).sort(function(a,b){ return b.p - a.p; })
+    };
+    if(f.man) fund.man = 1;
+    return {fund:fund, removed:sh.length - shl.length, date:c.finalLastDate || 0};
+  });
+}
+
+function addFund(){
+  var inp = document.getElementById('insin');
+  var btn = document.getElementById('addins');
+  var code = (inp.value || '').trim().replace(/\s+/g,'');
+  code = code.replace(/[۰-۹]/g, function(d){ return String('۰۱۲۳۴۵۶۷۸۹'.indexOf(d)); })
+             .replace(/[٠-٩]/g, function(d){ return String('٠١٢٣٤٥٦٧٨٩'.indexOf(d)); });
+  if(!code){ setStatus('کد نماد (insCode) را وارد کنید', 'err'); inp.focus(); return; }
+  if(!/^[A-Za-z0-9]{2,20}$/.test(code)){ setStatus('کد نماد نامعتبر است — فقط حروف و ارقام', 'err'); inp.focus(); return; }
+  var dup = STATE.funds.some(function(f){ return String(f.ins).toLowerCase() === code.toLowerCase(); });
+  if(dup){ setStatus('این کد نماد از قبل در فهرست است', 'err'); return; }
+  btn.disabled = true;
+  setStatus('در حال دریافت «' + code + '» از تسه‌مکو…');
+  return fetchFund({name:code, ins:code, full:'', units:0, price:0, holders:[], man:1}).then(function(r){
+    STATE.funds.push(r.fund);
+    STATE.removed = (STATE.removed || 0) + r.removed;
+    if(r.date){
+      STATE.maxdate = Math.max(STATE.maxdate || 0, r.date);
+      STATE.date = faDate(dateFromNum(STATE.maxdate));
+    }
+    saveState(); render();
+    inp.value = '';
+    setStatus('صندوق «' + r.fund.name + '» افزوده شد — ' + r.fund.holders.length + ' دارنده', 'ok');
+    var d = document.querySelector('details.fund[data-ins="' + code + '"]');
+    if(d){ d.open = true; d.scrollIntoView({behavior:'smooth', block:'center'}); }
+  }).catch(function(){
+    setStatus('دریافت نشد — کد نماد را بررسی کنید', 'err');
+  }).then(function(){ btn.disabled = false; });
+}
+
+function removeFund(ins){
+  var f = null;
+  for(var i = 0; i < STATE.funds.length; i++) if(String(STATE.funds[i].ins) === String(ins) && STATE.funds[i].man) f = STATE.funds[i];
+  if(!f) return;
+  if(!confirm('صندوق «' + (f.name || ins) + '» از گزارش حذف شود؟')) return;
+  STATE.funds = STATE.funds.filter(function(x){ return x !== f; });
+  saveState(); render();
+  setStatus('صندوق «' + (f.name || ins) + '» حذف شد', 'ok');
 }
 
 function update(){
   var btn = document.getElementById('upd');
-  btn.disabled = true;
-  btn.textContent = 'در حال آپدیت…';
+  if(btn){ btn.disabled = true; btn.textContent = 'در حال آپدیت…'; }
   setStatus('اتصال به تسه‌مکو…');
   var removed = 0, fails = 0, maxDate = 0, done = 0;
   var base = STATE.funds.slice();
   return pool(base, 6, function(f){
-    return Promise.all([
-      getJSON('https://cdn.tsetmc.com/api/ClosingPrice/GetClosingPriceInfo/' + f.ins),
-      getJSON('https://cdn.tsetmc.com/api/Shareholder/GetInstrumentShareHolderLast/' + f.ins),
-      getJSON('https://cdn.tsetmc.com/api/Instrument/GetInstrumentInfo/' + f.ins)
-    ]).then(function(res){
-      var c = res[0].closingPriceInfo || {}, sh = res[1].shareHolder || [], ci = res[2].instrumentInfo || {};
-      var shl = sh.filter(function(h){ return !EXCL.has(String(h.shareHolderName).trim()); });
-      removed += sh.length - shl.length;
-      if(c.finalLastDate && c.finalLastDate > maxDate) maxDate = c.finalLastDate;
-      return {
-        name: f.name, ins: f.ins, full: ci.lVal30 || f.full,
-        units: ci.zTitad || f.units, price: c.pClosing || f.price,
-        holders: shl.map(function(h){
-          return {n:String(h.shareHolderName).trim(), u:h.numberOfShares||0, p:Math.round((h.perOfShares||0)*1000)/1000, c:h.changeAmount||0};
-        }).sort(function(a,b){ return b.p - a.p; })
-      };
+    return fetchFund(f).then(function(r){
+      removed += r.removed;
+      if(r.date > maxDate) maxDate = r.date;
+      return r.fund;
     }).catch(function(){ fails++; var o = JSON.parse(JSON.stringify(f)); o.err = true; return o; });
   }, function(){ done++; progress(done, base.length); }).then(function(res){
     var ok = res.filter(function(f){ return !f.err; }).length;
@@ -414,15 +472,15 @@ function update(){
     }else{
       STATE.funds = res;
       STATE.removed = removed;
+      if(maxDate) STATE.maxdate = maxDate;
       STATE.date = faDate(maxDate ? dateFromNum(maxDate) : new Date());
       STATE.stamp = new Date().toLocaleString('fa-IR');
       saveState();
       render();
       setStatus('آپدیت شد: ' + ok + '/' + res.length + ' صندوق' + (fails ? ' — ' + fails + ' خطا' : ''), fails ? 'err' : 'ok');
     }
-    setTimeout(function(){ document.getElementById('pbar').classList.remove('on'); }, 1200);
-    btn.disabled = false;
-    btn.textContent = 'آپدیت از تسه‌مکو';
+    setTimeout(function(){ var b = document.getElementById('pbar'); if(b) b.classList.remove('on'); }, 1200);
+    if(btn){ btn.disabled = false; btn.textContent = 'آپدیت'; }
     return ok;
   });
 }
@@ -430,24 +488,31 @@ function update(){
 document.addEventListener('click', function(e){
   var b = e.target.closest('.hname');
   if(b) openHolder(b.dataset.h);
+  var rm = e.target.closest('.rmv');
+  if(rm){ e.preventDefault(); removeFund(rm.dataset.rm); }
 });
 document.getElementById('close').onclick = function(){ document.getElementById('ov').classList.remove('on'); };
 document.getElementById('ov').addEventListener('click', function(e){ if(e.target.id === 'ov') this.classList.remove('on'); });
 document.addEventListener('keydown', function(e){ if(e.key === 'Escape') document.getElementById('ov').classList.remove('on'); });
 document.getElementById('q').addEventListener('input', applyFilter);
+document.getElementById('insin').addEventListener('keydown', function(e){ if(e.key === 'Enter') addFund(); });
+document.getElementById('addins').onclick = function(){ addFund(); };
 document.getElementById('expand').onclick = function(){ Array.prototype.forEach.call(document.querySelectorAll('details.fund'), function(d){ d.open = true; }); };
 document.getElementById('collapse').onclick = function(){ Array.prototype.forEach.call(document.querySelectorAll('details.fund'), function(d){ d.open = false; }); };
-document.getElementById('upd').onclick = function(){ update(); };
+var updBtn = document.getElementById('upd');
+if(updBtn) updBtn.onclick = function(){ update(); };
 
 function buildExport(){
   var clone = document.documentElement.cloneNode(true);
   var pl = clone.querySelector('#payload');
-  if(pl) pl.textContent = JSON.stringify({date:STATE.date, stamp:STATE.stamp, funds:STATE.funds, removed:STATE.removed||0});
+  if(pl) pl.textContent = JSON.stringify({date:STATE.date, stamp:STATE.stamp, funds:STATE.funds, removed:STATE.removed||0, maxdate:STATE.maxdate||0});
   var els = ['#kpis','#fundlist','#aggtbl tbody','#mtbl tbody'];
   els.forEach(function(sel){ var e = clone.querySelector(sel); if(e) e.innerHTML = ''; });
   var st = clone.querySelector('#stamp'); if(st) st.textContent = '';
   var d = clone.querySelector('#d'); if(d) d.textContent = '';
   var s = clone.querySelector('#status'); if(s){ s.textContent = ''; s.className = ''; }
+  var u = clone.querySelector('#upd'); if(u) u.remove();
+  var uw = clone.querySelector('#updwrap'); if(uw) uw.remove();
   var pb = clone.querySelector('#pbar'); if(pb) pb.className = '';
   clone.setAttribute('data-snapshot','1');
   return '<!doctype html>\n' + clone.outerHTML;
