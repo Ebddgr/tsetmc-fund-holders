@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="fa" dir="rtl"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>دارندگان صندوق‌ها + ارزش سرمایه‌گذاری — تسه‌مکو</title>
+<title>دارندگان صندوق‌ها + ارزش سرمایه‌گذاری — tsetmc</title>
 <style>
 @font-face{font-family:'IRANSans';src:url(data:font/woff2;base64,__FONT_REG__) format('woff2');font-weight:400;font-display:swap}
 @font-face{font-family:'IRANSans';src:url(data:font/woff2;base64,__FONT_BOLD__) format('woff2');font-weight:700;font-display:swap}
@@ -179,10 +179,10 @@ footer{margin-top:28px;padding-top:12px;border-top:1px solid var(--line);color:v
 <h2>ریز دارندگان هر صندوق <small>هر ستون قابل مرتب‌سازی است</small></h2>
 <div id="fundlist"></div>
 
-<footer>منبع: سرویس رسمی تسه‌مکو (api/Shareholder/GetInstrumentShareHolderLast، api/ClosingPrice/GetClosingPriceInfo و api/Instrument/GetInstrumentInfo). ارزش هر دارنده = تعداد واحد × قیمت پایانی همان صندوق.
-تسه‌مکو فقط دارندگان بالای آستانه (معمولاً ≥۱٪) را منتشر می‌کند؛ پس درصدها به ۱۰۰ نمی‌رسند و باقی در دست دارندگان خرد است.
-ردیف‌های «شخص حقيقي» و «ETFكدرزروصندوقهاي سرمايه گذاري قابل معامله» از فهرست و از محاسبات ارزش حذف شده‌اند. دکمه «آپدیت از تسه‌مکو» داده را زنده می‌گیرد و در همین مرورگر ذخیره می‌شود (فایل اکسل با آپدیت صفحه به‌روز نمی‌شود).
-با واردکردن کد نماد (insCode) در فیلد کنار دکمه «افزودن»، صندوق دلخواه همان لحظه از تسه‌مکو گرفته و به گزارش اضافه می‌شود؛ صندوق‌های افزوده‌شده در مرورگر ذخیره می‌شوند و با دکمه «حذف» روی کارت‌شان پاک می‌شوند.</footer>
+<footer>منبع: سرویس رسمی tsetmc (api/Shareholder/GetInstrumentShareHolderLast، api/ClosingPrice/GetClosingPriceInfo و api/Instrument/GetInstrumentInfo). ارزش هر دارنده = تعداد واحد × قیمت پایانی همان صندوق.
+tsetmc فقط دارندگان بالای آستانه (معمولاً ≥۱٪) را منتشر می‌کند؛ پس درصدها به ۱۰۰ نمی‌رسند و باقی در دست دارندگان خرد است.
+ردیف‌های «شخص حقيقي» و «ETFكدرزروصندوقهاي سرمايه گذاري قابل معامله» از فهرست و از محاسبات ارزش حذف شده‌اند. دکمه «آپدیت از tsetmc» داده را زنده می‌گیرد و در همین مرورگر ذخیره می‌شود (فایل اکسل با آپدیت صفحه به‌روز نمی‌شود).
+با واردکردن کد نماد (insCode) در فیلد کنار دکمه «افزودن»، صندوق دلخواه همان لحظه از tsetmc گرفته و به گزارش اضافه می‌شود؛ صندوق‌های افزوده‌شده در مرورگر ذخیره می‌شوند و با دکمه «حذف» روی کارت‌شان پاک می‌شوند.</footer>
 </div>
 
 <div id="ov"><div id="modal">
@@ -425,7 +425,7 @@ function addFund(){
   var dup = STATE.funds.some(function(f){ return String(f.ins).toLowerCase() === code.toLowerCase(); });
   if(dup){ setStatus('این کد نماد از قبل در فهرست است', 'err'); return; }
   btn.disabled = true;
-  setStatus('در حال دریافت «' + code + '» از تسه‌مکو…');
+  setStatus('در حال دریافت «' + code + '» از tsetmc…');
   return fetchFund({name:code, ins:code, full:'', units:0, price:0, holders:[], man:1}).then(function(r){
     STATE.funds.push(r.fund);
     STATE.removed = (STATE.removed || 0) + r.removed;
@@ -456,7 +456,7 @@ function removeFund(ins){
 function update(){
   var btn = document.getElementById('upd');
   if(btn){ btn.disabled = true; btn.textContent = 'در حال آپدیت…'; }
-  setStatus('اتصال به تسه‌مکو…');
+  setStatus('اتصال به tsetmc…');
   var removed = 0, fails = 0, maxDate = 0, done = 0;
   var base = STATE.funds.slice();
   return pool(base, 6, function(f){
